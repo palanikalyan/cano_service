@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Order>
+  <orderId>ORD124</orderId>
+  <fundCode>ICICI002</fundCode>
+  <investorName>Priya Sharma</investorName>
+  <txnType>SELL</txnType>
+  <amount>7500</amount>
+  <units>75</units>
+</Order>

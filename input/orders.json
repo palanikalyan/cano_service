@@ -1,0 +1,8 @@
+{
+  "orderId": "ORD123",
+  "fundCode": "HDFC001",
+  "investorName": "Ravi Kumar",
+  "txnType": "BUY",
+  "amount": 5000,
+  "units": 50
+}

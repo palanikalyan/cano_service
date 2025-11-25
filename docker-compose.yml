@@ -1,0 +1,32 @@
+# Docker Compose for ActiveMQ and PostgreSQL
+version: '3.8'
+
+services:
+  activemq:
+    image: apache/activemq-classic:latest
+    container_name: canonical-activemq
+    ports:
+      - "61616:61616"  # JMS port
+      - "8161:8161"    # Web Console
+    environment:
+      ACTIVEMQ_USERNAME: admin
+      ACTIVEMQ_PASSWORD: admin
+    volumes:
+      - activemq_data:/opt/apache-activemq/data
+
+  postgres:
+    image: postgres:15
+    container_name: canonical-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: canonical_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root@123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+
+volumes:
+  activemq_data:
+  postgres_data:
