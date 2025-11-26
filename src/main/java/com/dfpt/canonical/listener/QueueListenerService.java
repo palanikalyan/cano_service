@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
 
-@Component
+// @Component  // Commented out to disable auto-consuming - uncomment to enable listener
 public class QueueListenerService {
 
     private static final Logger logger = LoggerFactory.getLogger(QueueListenerService.class);
@@ -18,12 +18,6 @@ public class QueueListenerService {
                     trade.getOrderId(), 
                     trade.getFundCode(), 
                     trade.getAmount());
-        
-        // Process the message here
-        // You can add your business logic like:
-        // - Send to external system
-        // - Further validation
-        // - Enrichment
-        // - Notification
+    
     }
 }

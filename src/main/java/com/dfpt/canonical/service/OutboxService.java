@@ -10,12 +10,18 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * Creates outbox events for event sourcing pattern
+ */
 @Service
 public class OutboxService {
 
     @Autowired
     private OutboxRepository repo;
 
+    /**
+     * Create an outbox event for a trade
+     */
     public void create(CanonicalTrade trade) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         mapper.findAndRegisterModules();

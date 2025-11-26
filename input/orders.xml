@@ -1,9 +1,67 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Order>
-  <orderId>ORD124</orderId>
-  <fundCode>ICICI002</fundCode>
-  <investorName>Priya Sharma</investorName>
-  <txnType>SELL</txnType>
-  <amount>7500</amount>
-  <units>75</units>
-</Order>
+<Orders>
+  <Order>
+    <orderId>TXN000000000004</orderId>
+    <fundCode>0004</fundCode>
+    <investorName>VIKAS</investorName>
+    <txnType>S</txnType>
+    <amount>9999.00</amount>
+    <units>750</units>
+    <originatorType>1</originatorType>
+    <firmNumber>0004</firmNumber>
+    <fundNumber>0004</fundNumber>
+    <transactionType>S</transactionType>
+    <transactionId>TXN000000000004</transactionId>
+    <tradeDate>24012025</tradeDate>
+    <dollarAmount>9999.00</dollarAmount>
+    <clientAccountNo>ACCT00000000000004</clientAccountNo>
+    <clientName>VIKAS</clientName>
+    <ssn>321456987</ssn>
+    <dob>11111988</dob>
+    <kyc>Y</kyc>
+    <shareQuantity>750</shareQuantity>
+  </Order>
+  <Order>
+    <orderId>TXN000000000005</orderId>
+    <fundCode>0005</fundCode>
+    <investorName>ANITA</investorName>
+    <txnType>B</txnType>
+    <amount>550.00</amount>
+    <units>200</units>
+    <originatorType>0</originatorType>
+    <firmNumber>0005</firmNumber>
+    <fundNumber>0005</fundNumber>
+    <transactionType>B</transactionType>
+    <transactionId>TXN000000000005</transactionId>
+    <tradeDate>25012025</tradeDate>
+    <dollarAmount>550.00</dollarAmount>
+    <clientAccountNo>ACCT00000000000005</clientAccountNo>
+    <clientName>ANITA</clientName>
+    <ssn>654321789</ssn>
+    <dob>09061993</dob>
+    <kyc>N</kyc>
+    <shareQuantity>200</shareQuantity>
+  </Order>
+  <Order>
+    <orderId>TXN000000000006</orderId>
+    <fundCode>0006</fundCode>
+    <investorName>JAMES MILLER</investorName>
+    <txnType>S</txnType>
+    <amount>25000.00</amount>
+    <units>1000</units>
+    <originatorType>1</originatorType>
+    <firmNumber>0006</firmNumber>
+    <fundNumber>0006</fundNumber>
+    <transactionType>S</transactionType>
+    <transactionId>TXN000000000006</transactionId>
+    <tradeDate>26012025</tradeDate>
+    <dollarAmount>25000.00</dollarAmount>
+    <clientAccountNo>ACCT00000000000006</clientAccountNo>
+    <clientName>JAMES MILLER</clientName>
+    <ssn>852741963</ssn>
+    <dob>12121980</dob>
+    <kyc>Y</kyc>
+    <shareQuantity>1000</shareQuantity>
+  </Order>
+</Orders>
+

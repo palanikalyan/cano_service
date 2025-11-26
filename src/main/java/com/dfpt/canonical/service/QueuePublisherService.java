@@ -8,6 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 
+/**
+ * Publishes trade messages to ActiveMQ
+ */
 @Service
 public class QueuePublisherService {
 
@@ -16,12 +19,15 @@ public class QueuePublisherService {
     @Autowired
     private JmsTemplate jmsTemplate;
 
+    /**
+     * Publish a trade to the ActiveMQ queue
+     */
     public void publishToQueue(CanonicalTrade trade) {
         try {
             jmsTemplate.convertAndSend(ActiveMQConfig.CANONICAL_QUEUE, trade);
-            logger.info("Published trade to ActiveMQ queue: {}", trade.getOrderId());
+            logger.info("Published to queue: {}", trade.getOrderId());
         } catch (Exception e) {
-            logger.error("Failed to publish trade to ActiveMQ queue: {}", e.getMessage(), e);
+            logger.error("Queue publish failed: {}", e.getMessage(), e);
             throw new RuntimeException("Queue publishing failed", e);
         }
     }
