@@ -12,15 +12,13 @@ spring:
     init:
       mode: always
 
-  activemq:
-    broker-url: tcp://127.0.0.1:61616
-    user: admin
-    password: admin
-    packages:
-      trust-all: true
-
-  jms:
-    pub-sub-domain: false
-
 server:
   port: 8085
+
+# File processing configuration
+file:
+  processing:
+    threads: 5  # Number of concurrent threads for file processing
+
+input:
+  directory: ./input

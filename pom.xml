@@ -70,18 +70,6 @@
             <version>2.3.0</version>
         </dependency>
 
-        <!-- Spring Boot Starter ActiveMQ -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-activemq</artifactId>
-        </dependency>
-
-        <!-- ActiveMQ Broker (Embedded for testing) -->
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>activemq-broker</artifactId>
-        </dependency>
-
         <!-- Lombok (optional) -->
         <dependency>
             <groupId>org.projectlombok</groupId>

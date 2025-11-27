@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Orders>
+    <Order>
+        <OriginatorType>1</OriginatorType>
+        <FirmNumber>1</FirmNumber>
+        <FundNumber>1</FundNumber>
+        <TransactionType>B</TransactionType>
+        <TransactionId>TXN0000000000007</TransactionId>
+        <TradeDateTime>21012025143000</TradeDateTime>
+        <DollarAmount>125.00</DollarAmount>
+        <ClientName>RAHUL K</ClientName>
+        <SSN>123456789</SSN>
+        <DOB>01011990</DOB>
+        <Status>Y</Status>
+        <ShareQuantity>150.00</ShareQuantity>
+    </Order>
+    <Order>
+        <OriginatorType>0</OriginatorType>
+        <FirmNumber>2</FirmNumber>
+        <FundNumber>2</FundNumber>
+        <TransactionType>S</TransactionType>
+        <TransactionId>TXN0000000000008</TransactionId>
+        <TradeDateTime>22012025101500</TradeDateTime>
+        <DollarAmount>0.00</DollarAmount>
+        <ClientName>JOHN SMITH</ClientName>
+        <SSN>987654321</SSN>
+        <DOB>15071985</DOB>
+        <Status>Y</Status>
+        <ShareQuantity>100.00</ShareQuantity>
+    </Order>
+    <Order>
+        <OriginatorType>1</OriginatorType>
+        <FirmNumber>3</FirmNumber>
+        <FundNumber>3</FundNumber>
+        <TransactionType>B</TransactionType>
+        <TransactionId>TXN0000000000009</TransactionId>
+        <TradeDateTime>23012025163045</TradeDateTime>
+        <DollarAmount>100.00</DollarAmount>
+        <ClientName>PRIYA R</ClientName>
+        <SSN>456789123</SSN>
+        <DOB>02021992</DOB>
+        <Status>Y</Status>
+        <ShareQuantity>200.00</ShareQuantity>
+    </Order>
+</Orders>

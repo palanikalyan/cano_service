@@ -8,29 +8,16 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "canonical_trades")
+@Table(name = "canonical_trades", indexes = {
+    @Index(name = "idx_transaction_id", columnList = "transaction_id"),
+    @Index(name = "idx_trade_datetime", columnList = "trade_datetime"),
+    @Index(name = "idx_client_account", columnList = "client_account_no")
+})
 public class CanonicalTrade {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
-
-    @Column(name = "order_id")
-    private String orderId;
-
-    @Column(name = "fund_code")
-    private String fundCode;
-
-    @Column(name = "investor_name")
-    private String investorName;
-
-    @Column(name = "txn_type")
-    private String txnType;
-
-    @Column(name = "amount")
-    private BigDecimal amount;
-
-    @Column(name = "units")
-    private BigDecimal units;
 
     @Column(name = "status")
     private String status;
@@ -38,15 +25,14 @@ public class CanonicalTrade {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
     
-    // New fields from fixed-width format
     @Column(name = "originator_type")
-    private String originatorType;
+    private Integer originatorType;
     
     @Column(name = "firm_number")
-    private String firmNumber;
+    private Integer firmNumber;
     
     @Column(name = "fund_number")
-    private String fundNumber;
+    private Integer fundNumber;
     
     @Column(name = "transaction_type")
     private String transactionType;
@@ -54,14 +40,14 @@ public class CanonicalTrade {
     @Column(name = "transaction_id")
     private String transactionId;
     
-    @Column(name = "trade_date")
-    private LocalDate tradeDate;
+    @Column(name = "trade_datetime")
+    private LocalDateTime tradeDateTime;
     
     @Column(name = "dollar_amount")
     private BigDecimal dollarAmount;
     
     @Column(name = "client_account_no")
-    private String clientAccountNo;
+    private Integer clientAccountNo;
     
     @Column(name = "client_name")
     private String clientName;
@@ -72,67 +58,18 @@ public class CanonicalTrade {
     @Column(name = "dob")
     private LocalDate dob;
     
-    @Column(name = "kyc")
-    private String kyc;
-    
     @Column(name = "share_quantity")
     private BigDecimal shareQuantity;
 
-    // Getters and Setters
+    
+
+    
     public UUID getId() {
         return id;
     }
 
     public void setId(UUID id) {
         this.id = id;
-    }
-
-    public String getOrderId() {
-        return orderId;
-    }
-
-    public void setOrderId(String orderId) {
-        this.orderId = orderId;
-    }
-
-    public String getFundCode() {
-        return fundCode;
-    }
-
-    public void setFundCode(String fundCode) {
-        this.fundCode = fundCode;
-    }
-
-    public String getInvestorName() {
-        return investorName;
-    }
-
-    public void setInvestorName(String investorName) {
-        this.investorName = investorName;
-    }
-
-    public String getTxnType() {
-        return txnType;
-    }
-
-    public void setTxnType(String txnType) {
-        this.txnType = txnType;
-    }
-
-    public BigDecimal getAmount() {
-        return amount;
-    }
-
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
-    }
-
-    public BigDecimal getUnits() {
-        return units;
-    }
-
-    public void setUnits(BigDecimal units) {
-        this.units = units;
     }
 
     public String getStatus() {
@@ -151,27 +88,27 @@ public class CanonicalTrade {
         this.createdAt = createdAt;
     }
 
-    public String getOriginatorType() {
+    public Integer getOriginatorType() {
         return originatorType;
     }
 
-    public void setOriginatorType(String originatorType) {
+    public void setOriginatorType(Integer originatorType) {
         this.originatorType = originatorType;
     }
 
-    public String getFirmNumber() {
+    public Integer getFirmNumber() {
         return firmNumber;
     }
 
-    public void setFirmNumber(String firmNumber) {
+    public void setFirmNumber(Integer firmNumber) {
         this.firmNumber = firmNumber;
     }
 
-    public String getFundNumber() {
+    public Integer getFundNumber() {
         return fundNumber;
     }
 
-    public void setFundNumber(String fundNumber) {
+    public void setFundNumber(Integer fundNumber) {
         this.fundNumber = fundNumber;
     }
 
@@ -191,12 +128,12 @@ public class CanonicalTrade {
         this.transactionId = transactionId;
     }
 
-    public LocalDate getTradeDate() {
-        return tradeDate;
+    public LocalDateTime getTradeDateTime() {
+        return tradeDateTime;
     }
 
-    public void setTradeDate(LocalDate tradeDate) {
-        this.tradeDate = tradeDate;
+    public void setTradeDateTime(LocalDateTime tradeDateTime) {
+        this.tradeDateTime = tradeDateTime;
     }
 
     public BigDecimal getDollarAmount() {
@@ -207,11 +144,11 @@ public class CanonicalTrade {
         this.dollarAmount = dollarAmount;
     }
 
-    public String getClientAccountNo() {
+    public Integer getClientAccountNo() {
         return clientAccountNo;
     }
 
-    public void setClientAccountNo(String clientAccountNo) {
+    public void setClientAccountNo(Integer clientAccountNo) {
         this.clientAccountNo = clientAccountNo;
     }
 
@@ -237,14 +174,6 @@ public class CanonicalTrade {
 
     public void setDob(LocalDate dob) {
         this.dob = dob;
-    }
-
-    public String getKyc() {
-        return kyc;
-    }
-
-    public void setKyc(String kyc) {
-        this.kyc = kyc;
     }
 
     public BigDecimal getShareQuantity() {

@@ -1,0 +1,46 @@
+{
+  "trades": [
+    {
+      "originatorType": "1",
+      "firmNumber": 1,
+      "fundNumber": 1,
+      "transactionType": "B",
+      "transactionId": "TXN0000000000007",
+      "tradeDateTime": "21012025143000",
+      "dollarAmount": 125.00,
+      "clientName": "RAHUL K",
+      "ssn": "123456789",
+      "dob": "01011990",
+      "status": "Y",
+      "shareQuantity": 150.00
+    },
+    {
+      "originatorType": "0",
+      "firmNumber": 2,
+      "fundNumber": 2,
+      "transactionType": "S",
+      "transactionId": "TXN0000000000008",
+      "tradeDateTime": "22012025101500",
+      "dollarAmount": 0.00,
+      "clientName": "JOHN SMITH",
+      "ssn": "987654321",
+      "dob": "15071985",
+      "status": "Y",
+      "shareQuantity": 100.00
+    },
+    {
+      "originatorType": "1",
+      "firmNumber": 3,
+      "fundNumber": 3,
+      "transactionType": "B",
+      "transactionId": "TXN0000000000009",
+      "tradeDateTime": "23012025163045",
+      "dollarAmount": 100.00,
+      "clientName": "PRIYA R",
+      "ssn": "456789123",
+      "dob": "02021992",
+      "status": "Y",
+      "shareQuantity": 200.00
+    }
+  ]
+}

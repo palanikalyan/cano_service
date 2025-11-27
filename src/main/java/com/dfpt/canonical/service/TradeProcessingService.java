@@ -14,16 +14,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Collections;
 
-/**
- * Main service that processes trade files
- * Flow: Read File → Parse → Validate → Save → Publish to Queue
- */
 @Service
 public class TradeProcessingService {
 
@@ -39,23 +38,14 @@ public class TradeProcessingService {
     private CanonicalTradeRepository tradeRepository;
 
     @Autowired
-    private OutboxService outboxService;
-
-    @Autowired
-    private QueuePublisherService queuePublisherService;
-    
-    @Autowired
     private FixedWidthParserService fixedWidthParserService;
 
-    /**
-     * Process a trade file
-     */
     public ProcessingResult processTradeFile(String fileName) {
         ProcessingResult result = new ProcessingResult();
         result.setFileName(fileName);
         
         try {
-            // Step 1: Load and parse file
+            
             String format = getFileFormat(fileName);
             result.setFormat(format);
             
@@ -69,36 +59,43 @@ public class TradeProcessingService {
                 return result;
             }
             
-            // Step 2: Process each trade
+            
             int successCount = 0;
             int failedCount = 0;
-            int publishedCount = 0;
             
-            for (ExternalTradeDTO trade : trades) {
+            for (int i = 0; i < trades.size(); i++) {
+                ExternalTradeDTO trade = trades.get(i);
                 try {
-                    // Transform to canonical model
+                    trade.setClientAccountNo(i + 1);
+                    
                     CanonicalTrade canonical = mapperService.mapFromJson(trade);
                     
-                    // Validate (simple check)
-                    if (canonical.getAmount() == null || canonical.getFundCode() == null) {
+                    String txnType = canonical.getTransactionType();
+                    boolean isValid = true;
+
+                    if ("B".equalsIgnoreCase(txnType)) {
+                        if (canonical.getDollarAmount() == null || 
+                            canonical.getDollarAmount().compareTo(BigDecimal.ZERO) <= 0 ||
+                            canonical.getFundNumber() == null) {
+                            isValid = false;
+                        }
+                    } else if ("S".equalsIgnoreCase(txnType)) {
+                        if (canonical.getShareQuantity() == null || 
+                            canonical.getShareQuantity().compareTo(BigDecimal.ZERO) <= 0 ||
+                            canonical.getFundNumber() == null) {
+                            isValid = false;
+                        }
+                    } else {
+                        isValid = false;
+                    }
+
+                    if (!isValid) {
                         failedCount++;
-                        result.addError("Invalid trade: " + canonical.getOrderId());
+                        result.addError("Invalid trade: " + canonical.getTransactionId());
                         continue;
                     }
                     
-                    // Save to database
                     CanonicalTrade saved = tradeRepository.save(canonical);
-                    
-                    // Create outbox event
-                    outboxService.create(saved);
-                    
-                    // Publish to ActiveMQ
-                    try {
-                        queuePublisherService.publishToQueue(saved);
-                        publishedCount++;
-                    } catch (Exception e) {
-                        logger.warn("Queue publish failed: {}", e.getMessage());
-                    }
                     
                     successCount++;
                     result.addProcessedTrade(saved);
@@ -110,10 +107,9 @@ public class TradeProcessingService {
                 }
             }
             
-            // Step 3: Set final status
+            
             result.setSuccessCount(successCount);
             result.setFailedCount(failedCount);
-            result.setPublishedCount(publishedCount);
             
             if (failedCount == 0) {
                 result.setStatus("SUCCESS");
@@ -134,9 +130,6 @@ public class TradeProcessingService {
         return result;
     }
     
-    /**
-     * Parse file based on format (json/xml/csv/txt)
-     */
     private List<ExternalTradeDTO> parseFile(File file, String format) throws Exception {
         List<ExternalTradeDTO> trades = new ArrayList<>();
         
@@ -164,41 +157,69 @@ public class TradeProcessingService {
         return trades;
     }
     
-    /**
-     * Parse JSON file (handles both array and single object)
-     */
     private List<ExternalTradeDTO> parseJsonFile(File file) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
+        mapper.findAndRegisterModules();
+
+        if (file.length() == 0) {
+            return Collections.emptyList();
+        }
+
         try {
-            // Try array first
             ExternalTradeDTO[] array = mapper.readValue(file, ExternalTradeDTO[].class);
             return Arrays.asList(array);
-        } catch (Exception e) {
-            // Single object
-            ExternalTradeDTO single = mapper.readValue(file, ExternalTradeDTO.class);
-            return Arrays.asList(single);
+        } catch (Exception arrayException) {
+            try {
+                ExternalTradeListDTO wrapped = mapper.readValue(file, ExternalTradeListDTO.class);
+                if (wrapped != null && wrapped.getOrders() != null && !wrapped.getOrders().isEmpty()) {
+                    return wrapped.getOrders();
+                }
+            } catch (Exception wrappedException) {
+            }
+            
+            try {
+                ExternalTradeDTO single = mapper.readValue(file, ExternalTradeDTO.class);
+                return Collections.singletonList(single);
+            } catch (Exception singleException) {
+                try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+                    List<ExternalTradeDTO> list = new ArrayList<>();
+                    String line;
+
+                    while ((line = br.readLine()) != null) {
+                        line = line.trim();
+                        if (line.isEmpty()) continue;
+
+                        ExternalTradeDTO dto = mapper.readValue(line, ExternalTradeDTO.class);
+                        list.add(dto);
+                    }
+
+                    if (!list.isEmpty()) return list;
+                } catch (Exception jsonLinesEx) {
+                }
+
+                throw new Exception(
+                    "Invalid JSON format in file: " + file.getName() 
+                    + ". Expected JSON array, single object, wrapped array, or JSON lines."
+                );
+            }
         }
     }
     
-    /**
-     * Parse XML file (handles both multiple orders and single order)
-     */
+    
     private List<ExternalTradeDTO> parseXmlFile(File file) throws Exception {
         XmlMapper mapper = new XmlMapper();
         try {
-            // Try wrapper with multiple orders
+
             ExternalTradeListDTO listDTO = mapper.readValue(file, ExternalTradeListDTO.class);
             return listDTO.getOrders();
         } catch (Exception e) {
-            // Single order
+        
             ExternalTradeDTO single = mapper.readValue(file, ExternalTradeDTO.class);
             return Arrays.asList(single);
         }
     }
     
-    /**
-     * Parse CSV file
-     */
+    
     private List<ExternalTradeDTO> parseCsvFile(File file) throws Exception {
         try (FileReader reader = new FileReader(file)) {
             CsvToBean<ExternalTradeDTO> csvToBean = new CsvToBeanBuilder<ExternalTradeDTO>(reader)
@@ -209,9 +230,7 @@ public class TradeProcessingService {
         }
     }
     
-    /**
-     * Get file extension
-     */
+    
     private String getFileFormat(String fileName) {
         int lastDot = fileName.lastIndexOf('.');
         if (lastDot > 0) {

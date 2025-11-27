@@ -9,17 +9,16 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import java.io.File;
 import java.nio.file.*;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
-/**
- * Watches input folder and processes new trade files automatically
- * Two detection methods:
- * 1. Real-time: WatchService for instant file detection
- * 2. Scheduled: Backup scan every 30 seconds
- */
+
 @Service
 public class FileWatcherService {
 
@@ -27,43 +26,63 @@ public class FileWatcherService {
 
     @Value("${input.directory:./input}")
     private String inputDirectory;
+    
+    @Value("${file.processing.threads:5}")
+    private int processingThreads;
 
     @Autowired
     private TradeProcessingService tradeProcessingService;
-
-    // Track processed files to avoid duplicates
+    
     private Set<String> processedFiles = new HashSet<>();
+    private Set<String> processingFiles = new HashSet<>();
     private WatchService watchService;
     private Path inputPath;
+    private ExecutorService fileProcessingExecutor;
 
-    /**
-     * Initialize watcher when application starts
-     */
+   
     @PostConstruct
     public void init() {
         try {
+            // Initialize thread pool for parallel file processing
+            fileProcessingExecutor = Executors.newFixedThreadPool(processingThreads);
+            logger.info("File processing thread pool initialized with {} threads", processingThreads);
+            
             inputPath = Paths.get(inputDirectory).toAbsolutePath();
             File inputDir = inputPath.toFile();
             
-            // Create directory if missing
             if (!inputDir.exists()) {
                 inputDir.mkdirs();
                 logger.info("Created input directory: {}", inputPath);
             }
             
             logger.info("Monitoring: {}", inputPath);
-            
-            // Start real-time watching
+        
             startWatching();
             
         } catch (Exception e) {
             logger.error("Error initializing FileWatcher", e);
         }
     }
+    
+    @PreDestroy
+    public void cleanup() {
+        try {
+            logger.info("Shutting down file processing executor...");
+            fileProcessingExecutor.shutdown();
+            if (!fileProcessingExecutor.awaitTermination(60, TimeUnit.SECONDS)) {
+                fileProcessingExecutor.shutdownNow();
+            }
+            
+            if (watchService != null) {
+                watchService.close();
+            }
+            logger.info("File watcher service shut down successfully");
+        } catch (Exception e) {
+            logger.error("Error during cleanup", e);
+            fileProcessingExecutor.shutdownNow();
+        }
+    }
 
-    /**
-     * Start real-time file watching
-     */
     private void startWatching() {
         Thread watchThread = new Thread(() -> {
             try {
@@ -101,41 +120,52 @@ public class FileWatcherService {
         watchThread.start();
     }
 
-    /**
-     * Process newly detected file
-     */
     private void handleNewFile(String fileName) {
-        // Skip duplicates
-        if (processedFiles.contains(fileName)) {
-            return;
-        }
-        
-        // Only process supported formats
-        if (!isSupportedFile(fileName)) {
-            return;
+        synchronized (processingFiles) {
+            if (processedFiles.contains(fileName) || processingFiles.contains(fileName)) {
+                return;
+            }
+            
+            if (!isSupportedFile(fileName)) {
+                return;
+            }
+            
+            // Mark file as being processed
+            processingFiles.add(fileName);
         }
         
         logger.info("New file: {}", fileName);
         
-        // Wait for file to finish writing
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-        
-        // Process the file
-        ProcessingResult result = tradeProcessingService.processTradeFile(fileName);
-        
-        logger.info("Processed: {} - Status: {} - Success: {}/{}", 
-            fileName, result.getStatus(), result.getSuccessCount(), result.getTotalRecords());
-        
-        processedFiles.add(fileName);
+        // Submit file processing task to thread pool
+        fileProcessingExecutor.submit(() -> {
+            try {
+                // Small delay to ensure file is fully written
+                Thread.sleep(500);
+                
+                logger.info("Processing file: {} on thread: {}", fileName, Thread.currentThread().getName());
+                
+                ProcessingResult result = tradeProcessingService.processTradeFile(fileName);
+                
+                logger.info("Processed: {} - Status: {} - Success: {}/{} on thread: {}", 
+                    fileName, result.getStatus(), result.getSuccessCount(), 
+                    result.getTotalRecords(), Thread.currentThread().getName());
+                
+                synchronized (processingFiles) {
+                    processedFiles.add(fileName);
+                    processingFiles.remove(fileName);
+                }
+                
+            } catch (Exception e) {
+                logger.error("Error processing file: {} on thread: {}", 
+                    fileName, Thread.currentThread().getName(), e);
+                
+                synchronized (processingFiles) {
+                    processingFiles.remove(fileName);
+                }
+            }
+        });
     }
 
-    /**
-     * Backup scan for missed files (runs every 30 seconds)
-     */
     @Scheduled(fixedDelay = 30000)
     public void scanForUnprocessedFiles() {
         try {
@@ -144,10 +174,16 @@ public class FileWatcherService {
             
             if (files != null) {
                 for (File file : files) {
-                    if (file.isFile() && !processedFiles.contains(file.getName())) {
-                        if (isSupportedFile(file.getName())) {
-                            logger.info("Found unprocessed: {}", file.getName());
-                            handleNewFile(file.getName());
+                    if (file.isFile()) {
+                        String fileName = file.getName();
+                        
+                        synchronized (processingFiles) {
+                            if (!processedFiles.contains(fileName) && 
+                                !processingFiles.contains(fileName) &&
+                                isSupportedFile(fileName)) {
+                                logger.info("Found unprocessed: {}", fileName);
+                                handleNewFile(fileName);
+                            }
                         }
                     }
                 }
@@ -157,9 +193,6 @@ public class FileWatcherService {
         }
     }
 
-    /**
-     * Check if file format is supported
-     */
     private boolean isSupportedFile(String fileName) {
         String lower = fileName.toLowerCase();
         return lower.endsWith(".json") || 
@@ -168,10 +201,23 @@ public class FileWatcherService {
                lower.endsWith(".txt");
     }
     
-    /**
-     * Clear processed files (for testing)
-     */
+
     public void resetProcessedFiles() {
-        processedFiles.clear();
+        synchronized (processingFiles) {
+            processedFiles.clear();
+            processingFiles.clear();
+        }
+    }
+    
+    public int getProcessedFileCount() {
+        synchronized (processingFiles) {
+            return processedFiles.size();
+        }
+    }
+    
+    public int getProcessingFileCount() {
+        synchronized (processingFiles) {
+            return processingFiles.size();
+        }
     }
 }

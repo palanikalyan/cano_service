@@ -1,5 +1,6 @@
 package com.dfpt.canonical.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
@@ -11,6 +12,7 @@ public class ExternalTradeListDTO {
 
     @JacksonXmlProperty(localName = "Order")
     @JacksonXmlElementWrapper(useWrapping = false)
+    @JsonProperty("trades")  // For JSON format
     private List<ExternalTradeDTO> orders;
 
     public List<ExternalTradeDTO> getOrders() {

@@ -6,10 +6,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Result of file processing operation
- * Contains success/failure counts and processed trades
- */
 public class ProcessingResult {
     
     private String fileName;
@@ -18,10 +14,9 @@ public class ProcessingResult {
     private int totalRecords;
     private int successCount;
     private int failedCount;
-    private int publishedCount;
     private List<CanonicalTrade> processedTrades;
     private List<String> errors;
-    private String status; // SUCCESS, PARTIAL_SUCCESS, FAILED, ERROR
+    private String status; 
     
     public ProcessingResult() {
         this.processedTrades = new ArrayList<>();
@@ -29,7 +24,7 @@ public class ProcessingResult {
         this.processedAt = LocalDateTime.now();
     }
 
-    // Getters and Setters
+
     
     public String getFileName() {
         return fileName;
@@ -79,14 +74,6 @@ public class ProcessingResult {
         this.failedCount = failedCount;
     }
 
-    public int getPublishedCount() {
-        return publishedCount;
-    }
-
-    public void setPublishedCount(int publishedCount) {
-        this.publishedCount = publishedCount;
-    }
-
     public List<CanonicalTrade> getProcessedTrades() {
         return processedTrades;
     }
@@ -111,7 +98,7 @@ public class ProcessingResult {
         this.status = status;
     }
     
-    // Helper methods
+    
     
     public void addError(String error) {
         this.errors.add(error);
@@ -130,7 +117,6 @@ public class ProcessingResult {
                 ", totalRecords=" + totalRecords +
                 ", successCount=" + successCount +
                 ", failedCount=" + failedCount +
-                ", publishedCount=" + publishedCount +
                 ", status='" + status + '\'' +
                 ", errorsCount=" + errors.size() +
                 '}';
